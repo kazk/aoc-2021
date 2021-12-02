@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -eu
+
+# Load `.env` https://stackoverflow.com/a/30969768
+set -o allexport
+source .env
+set +o allexport
+
+if [[ $# -ne 1 ]]; then
+  echo "Get input file for given day"
+  echo "USAGE: ./get day"
+  exit 1
+fi
+
+printf -v pday "day%02d" $1
+
+if [[ -f "./inputs/${pday}.txt" ]]; then
+  echo "the input file for day $1 already exists"
+  exit 0
+fi
+
+curl -sSL \
+   -H "Cookie: session=$AOC_SESSION" \
+   -o ./inputs/${pday}.txt \
+   "https://adventofcode.com/2021/day/$1/input"

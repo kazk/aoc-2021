@@ -1,0 +1,11 @@
+[package]
+name = "aoc2021"
+version = "0.1.0"
+license = "Apache-2.0"
+edition = "2021"
+rust-version = "1.56"
+publish = false
+
+[dependencies]
+thiserror = "1.0.30"
+took = "0.1.2"

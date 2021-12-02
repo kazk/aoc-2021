@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  echo "Generate files for given day"
+  echo "USAGE: ./gen day"
+  exit 1
+fi
+
+printf -v pday "day%02d" $1
+
+if [[ -f "./src/bin/${pday}.rs" ]]; then
+  echo "./src/bin/${pday}.rs already exists"
+  exit 1
+fi
+
+if [[ -f "./src/${pday}.rs" ]]; then
+  echo "./src/${pday}.rs already exists"
+  exit 1
+fi
+
+if grep -q "pub mod $pday;" ./src/lib.rs; then
+  echo "src/lib.rs already contains `pub mod $pday;`"
+  exit 1
+fi
+
+cat << EOF > ./src/bin/$pday.rs
+use std::io::Read;
+
+use aoc2021::Result;
+
+fn main() -> Result<()> {
+    let mut input = String::new();
+    std::io::stdin().read_to_string(&mut input)?;
+
+    println!("running part 1");
+    let timer = took::Timer::new();
+    aoc2021::${pday}::part1(&input)?;
+    println!("took {}", timer.took());
+
+    println!("running part 2");
+    let timer = took::Timer::new();
+    aoc2021::${pday}::part2(&input)?;
+    println!("took {}", timer.took());
+
+    Ok(())
+}
+EOF
+
+cat << EOF > ./src/$pday.rs
+use super::Result;
+
+/// # Errors
+pub fn part1(input: &str) -> Result<()> {
+    todo!();
+}
+
+/// # Errors
+pub fn part2(input: &str) -> Result<()> {
+    todo!();
+}
+EOF
+
+echo "pub mod ${pday};" >> ./src/lib.rs

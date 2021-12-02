@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  echo "Run solutions for given day"
+  echo "USAGE: ./run day"
+  exit 1
+fi
+
+printf -v pday "day%02d" $1
+
+cargo run --bin "$pday" < ./inputs/${pday}.txt
