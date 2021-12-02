@@ -9,4 +9,4 @@ fi
 
 printf -v pday "day%02d" $1
 
-cargo run --bin "$pday" < ./inputs/${pday}.txt
+cargo run --release --bin "$pday" < ./inputs/${pday}.txt
