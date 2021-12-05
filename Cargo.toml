@@ -17,3 +17,7 @@ indoc = "1.0"
 [[bench]]
 name = "bench_day04"
 harness = false
+
+[[bench]]
+name = "bench_day05"
+harness = false
