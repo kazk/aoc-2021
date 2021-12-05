@@ -5,7 +5,10 @@ use thiserror::Error;
 use super::Result;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-struct Point((i32, i32));
+struct Point {
+    x: i32,
+    y: i32,
+}
 
 #[derive(Debug, Error)]
 enum ParsePointError {
@@ -24,10 +27,19 @@ impl std::str::FromStr for Point {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (x, y) = s.split_once(',').ok_or(ParsePointError::MissingComma)?;
-        Ok(Point((
-            x.parse().map_err(ParsePointError::ParseX)?,
-            y.parse().map_err(ParsePointError::ParseY)?,
-        )))
+        Ok(Point {
+            x: x.parse().map_err(ParsePointError::ParseX)?,
+            y: y.parse().map_err(ParsePointError::ParseY)?,
+        })
+    }
+}
+
+impl Point {
+    fn move_by(self, dx: i32, dy: i32) -> Point {
+        Point {
+            x: self.x + dx,
+            y: self.y + dy,
+        }
     }
 }
 
@@ -44,6 +56,9 @@ enum ParseLineSegmentError {
 
     #[error("failed to parse the second point")]
     ParsePointB(#[source] ParsePointError),
+
+    #[error("invalid segment: must be horizontal, vertical or 45 degrees diagnoal")]
+    InvalidSegment,
 }
 
 impl std::str::FromStr for LineSegment {
@@ -53,46 +68,27 @@ impl std::str::FromStr for LineSegment {
         let (a, b) = s
             .split_once(" -> ")
             .ok_or(ParseLineSegmentError::MissingArrow)?;
-        Ok(LineSegment((
-            a.parse().map_err(ParseLineSegmentError::ParsePointA)?,
-            b.parse().map_err(ParseLineSegmentError::ParsePointB)?,
-        )))
+        let p1: Point = a.parse().map_err(ParseLineSegmentError::ParsePointA)?;
+        let p2: Point = b.parse().map_err(ParseLineSegmentError::ParsePointB)?;
+        let (dx, dy) = (p2.x - p1.x, p2.y - p1.y);
+        if dx == 0 || dy == 0 || dx.abs() == dy.abs() {
+            Ok(LineSegment((p1, p2)))
+        } else {
+            Err(ParseLineSegmentError::InvalidSegment)
+        }
     }
 }
 
 impl LineSegment {
     fn is_diagonal(&self) -> bool {
-        let LineSegment((Point((x1, y1)), Point((x2, y2)))) = self;
-        (x2 - x1).abs() == (y2 - y1).abs()
+        let LineSegment((p1, p2)) = self;
+        (p2.x - p1.x).abs() == (p2.y - p1.y).abs()
     }
 
     fn into_points(self) -> impl Iterator<Item = Point> {
-        let LineSegment((Point((x1, y1)), Point((x2, y2)))) = self;
-        match (x2 - x1, y2 - y1) {
-            // Vertical line
-            (0, dy) => {
-                let sign = dy.signum();
-                Box::new((0..=dy.abs()).map(move |d| Point((x1, y1 + d * sign))))
-                    as Box<dyn Iterator<Item = Point>>
-            }
-
-            // Horizontal line
-            (dx, 0) => {
-                let sign = dx.signum();
-                Box::new((0..=dx.abs()).map(move |d| Point((x1 + d * sign, y1))))
-                    as Box<dyn Iterator<Item = Point>>
-            }
-
-            // Diagnoal line
-            (dx, dy) if dx.abs() == dy.abs() => {
-                let sign_x = dx.signum();
-                let sign_y = dy.signum();
-                Box::new((0..=dx.abs()).map(move |d| Point((x1 + d * sign_x, y1 + d * sign_y))))
-                    as Box<dyn Iterator<Item = Point>>
-            }
-
-            (_, _) => Box::new(std::iter::empty()) as Box<dyn Iterator<Item = Point>>,
-        }
+        let LineSegment((p1, p2)) = self;
+        let (dx, dy) = ((p2.x - p1.x).signum(), (p2.y - p1.y).signum());
+        std::iter::successors(Some(p1), move |&p| (p != p2).then(|| p.move_by(dx, dy)))
     }
 }
 
