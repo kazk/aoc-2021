@@ -35,12 +35,12 @@ fn main() -> Result<()> {
 
     println!("running part 1");
     let timer = took::Timer::new();
-    aoc2021::${pday}::part1(&input)?;
+    println!("{}", aoc2021::${pday}::part1(&input)?);
     println!("took {}", timer.took());
 
     println!("running part 2");
     let timer = took::Timer::new();
-    aoc2021::${pday}::part2(&input)?;
+    println!("{}", aoc2021::${pday}::part2(&input)?);
     println!("took {}", timer.took());
 
     Ok(())
@@ -50,14 +50,25 @@ EOF
 cat << EOF > ./src/$pday.rs
 use super::Result;
 
-/// # Errors
-pub fn part1(input: &str) -> Result<()> {
-    todo!();
+pub fn part1(input: &str) -> Result<u32> {
+    Ok(0)
 }
 
-/// # Errors
-pub fn part2(input: &str) -> Result<()> {
-    todo!();
+pub fn part2(input: &str) -> Result<u32> {
+    Ok(0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_example() {
+        let input = indoc::indoc! {"
+        "};
+        assert_eq!(part1(input).unwrap(), 0);
+        assert_eq!(part2(input).unwrap(), 0);
+    }
 }
 EOF
 
