@@ -2,3 +2,4 @@
 /inputs/*
 !/inputs/README.md
 .env
+.vscode/
